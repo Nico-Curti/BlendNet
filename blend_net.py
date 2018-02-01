@@ -136,7 +136,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = description)
     parser.add_argument("-f", required=False, dest="filename", action="store", help="filename as json or networkx-json", default="")
     parser.add_argument("-e", required=False, dest="edges", action="store", help="string with edges", default="")
-    parser.add_argument("-d", required=False, dest="dim", action="store", help="number of dimensions", default=2)
     
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -146,7 +145,6 @@ if __name__ == "__main__":
     
     filename = args.filename
     edges = args.edges
-    dim = int(args.dim)
     G = nx.Graph()
     
     if filename != "" and os.path.exists(filename):
@@ -161,6 +159,6 @@ if __name__ == "__main__":
     
 
     G.add_edges_from(ast.literal_eval(edges))
-    position = nx.spring_layout(G, dim)
+    position = nx.spring_layout(G, dim=3, scale=10)
     
     blend_net(G, position)

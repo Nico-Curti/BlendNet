@@ -1,6 +1,5 @@
 edgelist = ""
 filename = ""
-dim = 2
 
 
 ifeq ($(OS), Windows_NT)
@@ -18,5 +17,8 @@ install: 	install.sh \
 
 net:
 
-	blender --python blend_net.py -- -e $(edgelist) -f $(filename) -d $(dim)
+	blender --python blend_net.py -- -e $(edgelist) -f $(filename)
 
+example:
+
+	$(MAKE) net edgelist="[[1,2],[2,3],[3,4]]"
