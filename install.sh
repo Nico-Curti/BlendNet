@@ -25,8 +25,17 @@ echo "Blender identification"
 if [ ! -x "blender" ]; then
 	echo ${red}Blender not FOUND
 	if [ "$3" == "-y" ] || [ "$3" == "-Y" ] || [ "$3" == "yes" ]; then
-		echo download blender from http://download.blender.org/source/blender-2.79.tar.gz
-		wget http://download.blender.org/source/blender-2.79.tar.gz
+		echo cloning Blender from https://git.blender.org/blender.git
+		git clone https://git.blender.org/blender.git
+		cd blender
+		git submodule update --init --recursive
+		git submodule foreach git checkout master
+		git submodule foreach git pull --rebase origin master
+		mkdir lib
+		./build_files/build_environment/install_deps.sh --install ./lib/
+		make
+
+
 		wget https://bootstrap.pypa.io/get-pip.py
 
 
@@ -34,8 +43,8 @@ if [ ! -x "blender" ]; then
 		read -p "Do you want install it? [y/n] " confirm
 		if [ "$CONFIRM" == "n" ] || [ "$CONFIRM" == "N" ]; then echo ${red}"Abort";
 		else 
-			echo download blender from http://download.blender.org/source/blender-2.79.tar.gz
-			wget http://download.blender.org/source/blender-2.79.tar.gz
+			echo cloning Blender from https://github.com/maiself/blender
+			git clone https://github.com/maiself/blender
 			wget https://bootstrap.pypa.io/get-pip.py
 		fi
 	fi

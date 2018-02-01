@@ -11,7 +11,6 @@ import sys # exit
 import os # exists file
 import argparse # parse command line
 import ast # convert string to list
-import json # file as json
 import random # nrg
 # blender python
 import bpy 
@@ -148,17 +147,15 @@ if __name__ == "__main__":
     G = nx.Graph()
     
     if filename != "" and os.path.exists(filename):
-        try:
-            edges = json.load(open(filename))
-        except json.decoder.JSONDecodeError:
-            edges = pd.read_csv(filename, sep=",", header=None).values()
+      	edges = pd.read_csv(filename, sep=",", header=None)
+       	G.add_edges_from(edges.values)
             
     elif edges == "" and filename == "":
         parser.print_help()
         sys.exit(1)
-    
+    else:    
+	    G.add_edges_from(ast.literal_eval(edges))
 
-    G.add_edges_from(ast.literal_eval(edges))
     position = nx.spring_layout(G, dim=3, scale=10)
     
     blend_net(G, position)
