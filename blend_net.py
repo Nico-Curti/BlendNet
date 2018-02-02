@@ -11,37 +11,94 @@ import sys # exit
 import os # exists file
 import argparse # parse command line
 import ast # convert string to list
+import json # file as json
+import numpy as np # append numpy array
 import random # nrg
 # blender python
 import bpy 
 from math import acos#, degrees, pi
 from mathutils import Vector
+from matplotlib import colors as mcolors
 
-# Colors to turn into materials
-colors = {"purple": (178, 132, 234), "gray": (11, 11, 11),
-          "green": (114, 195, 0), "red": (255, 0, 75),
-          "blue": (0, 131, 255), "clear": (0, 131, 255),
-          "yellow": (255, 187, 0), "light_gray": (118, 118, 118)}
+all_colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+all_colors = {name : mcolors.to_rgb(ash) for name, ash in all_colors.items()}
 
-# Normalize to [0,1] and make blender materials
-for key, value in colors.items():
-    value = [x / 255.0 for x in value]
-    bpy.data.materials.new(name=key)
-    bpy.data.materials[key].diffuse_color = value
-    bpy.data.materials[key].specular_intensity = 0.5
+## Colors to turn into materials
+#colors = {"purple": (178, 132, 234), "gray": (11, 11, 11),
+#          "green": (114, 195, 0), "red": (255, 0, 75),
+#          "blue": (0, 131, 255), "clear": (0, 131, 255),
+#          "yellow": (255, 187, 0), "light_gray": (118, 118, 118)}
 
-    # Don't specify more parameters if these colors
-    if key == "gray" or key == "light_gray":
-        continue
 
-    # Transparency parameters
-    bpy.data.materials[key].use_transparency = True
-    bpy.data.materials[key].transparency_method = "RAYTRACE"
-    bpy.data.materials[key].alpha = 0.1 if key == "clear" else 0.95
-    bpy.data.materials[key].raytrace_transparency.fresnel = 0.1
-    bpy.data.materials[key].raytrace_transparency.ior = 1.15
+def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25):
+    # edge obj
+    bpy.data.materials.new(name="light_gray")
+    bpy.data.materials["light_gray"].diffuse_color = (0.4627450980392157, 0.4627450980392157, 0.4627450980392157)
+    bpy.data.materials["light_gray"].specular_intensity = 0.5
+    # sphere obj
+    for color in colors:
+        #color = [x / 255.0 for x in name_to_rgb(color)]
+        bpy.data.materials.new(name=color)
+        bpy.data.materials[color].diffuse_color = all_colors[color]
+        bpy.data.materials[color].specular_intensity = 0.5
 
-def blend_net(graph, position, node_size=3, edge_thickness=0.25):
+        # Don't specify more parameters if these colors
+        if color == "gray" or color == "light_gray":
+            continue
+
+        # Transparency parameters
+        bpy.data.materials[color].use_transparency = True
+        bpy.data.materials[color].transparency_method = "RAYTRACE"
+        bpy.data.materials[color].alpha = 0.1 if color == "clear" else 0.95
+        bpy.data.materials[color].raytrace_transparency.fresnel = 0.1
+        bpy.data.materials[color].raytrace_transparency.ior = 1.15
+
+
+    # Set scene, light and alpha_mode
+    scene = bpy.context.scene
+    scene.render.engine = 'BLENDER_RENDER' # 'CYCLE'
+    scene.render.alpha_mode = 'TRANSPARENT' # remove background
+    #camera = bpy.context.scene.camera
+    #camera.data.type = 'PERSP'
+    area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+    area.spaces[0].region_3d.view_perspective = 'CAMERA'
+
+    bpy.data.worlds["World"].light_settings.use_ambient_occlusion = True
+    bpy.data.worlds["World"].light_settings.samples = 10
+
+    # camera position
+    if(len(bpy.data.cameras) == 1):
+        obj = bpy.data.objects['Camera'] # bpy.types.Camera
+        if dim == 2:
+            loc_camera = obj.matrix_world.to_translation()
+            mean_x = np.mean([el[0] for el in position.values()])
+            mean_y = np.mean([el[1] for el in position.values()])
+            obj.location.x = mean_x
+            obj.location.y = mean_y
+
+            min_x = min([el[0] for el in position.values()])
+            max_x = max([el[0] for el in position.values()])
+            min_y = min([el[1] for el in position.values()])
+            max_y = max([el[1] for el in position.values()])
+            obj.location.z = max(max_x - min_x, max_y - min_y)/(2 * np.tan(np.radians(20)/2))
+            obj.rotation_euler = (0.0, 0.0, np.radians(90))
+            obj.keyframe_insert(data_path="location", frame=10.0)
+
+        elif dim == 3:
+            mean_x = np.mean([el[0] for el in position.values()])
+            mean_y = np.mean([el[1] for el in position.values()])
+            mean_z = np.mean([el[2] for el in position.values()])
+
+            obj.location.x = mean_x
+            obj.location.y = mean_y
+            min_x = min([el[0] for el in position.values()])
+            max_x = max([el[0] for el in position.values()])
+            min_y = min([el[1] for el in position.values()])
+            max_y = max([el[1] for el in position.values()])
+            obj.location.z = mean_z + max(max_x - min_x, max_y - min_y)/(2 * np.tan(np.radians(20)/2))
+            obj.rotation_euler = (0.0, 0.0, np.radians(90))
+            obj.keyframe_insert(data_path="location", frame=10.0)
+
     # Add some mesh primitives
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.mesh.primitive_uv_sphere_add()
@@ -59,7 +116,7 @@ def blend_net(graph, position, node_size=3, edge_thickness=0.25):
     nx.set_node_attributes(G, [], "color")
     for node in graph.nodes():
         # Coloring rule for nodes. Edit this to suit your needs!
-        col = random.choice(list(colors.keys()))
+        col = random.choice(colors)
         
         # Copy mesh primitive and edit to make node
         # (You can change the shape of drawn nodes here)
@@ -135,6 +192,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = description)
     parser.add_argument("-f", required=False, dest="filename", action="store", help="filename as json or networkx-json", default="")
     parser.add_argument("-e", required=False, dest="edges", action="store", help="string with edges", default="")
+    parser.add_argument("-d", required=False, dest="dim", action="store", help="dimension to plot (2 or 3)", default=3)
     
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -144,18 +202,39 @@ if __name__ == "__main__":
     
     filename = args.filename
     edges = args.edges
+    dim = int(args.dim)
     G = nx.Graph()
     
     if filename != "" and os.path.exists(filename):
-      	edges = pd.read_csv(filename, sep=",", header=None)
-       	G.add_edges_from(edges.values)
-            
+        data = pd.read_csv(filename, sep=",", header=0)
+        data.columns = [str(c).upper() for c in data.columns]
+        edges = data[['SOURCE', 'TARGET']].values
+        G.add_edges_from(edges)
+        if 'COLORS' in data.columns:
+            colors = data['COLORS']
+        else:
+            colors = np.random.choice(all_colors.keys(), len(G.nodes))
+        is_coords = list(filter(lambda x: x in data.columns, ['X', 'Y']))
+        if len(is_coords) != 0:
+            if 'Z' in data.columns:
+                position = data[['X', 'Y', 'Z']]
+            else:
+                position = data[['X', 'Y']]
+        else:
+            position = nx.spring_layout(G, dim=dim, scale=10)
+            if dim == 2:
+                for key in position.keys():
+                    position[key] = np.append(position[key], 0.)
+
     elif edges == "" and filename == "":
         parser.print_help()
         sys.exit(1)
-    else:    
-	    G.add_edges_from(ast.literal_eval(edges))
-
-    position = nx.spring_layout(G, dim=3, scale=10)
-    
-    blend_net(G, position)
+    else:
+        G.add_edges_from(ast.literal_eval(edges))
+        position = nx.spring_layout(G, dim=dim, scale=10)
+        if dim == 2:
+            for key in position.keys():
+                position[key] = np.append(position[key], 0.)
+        colors = np.random.choice(all_colors.keys(), len(G.nodes))
+        
+    blend_net(G, position, dim, colors)
