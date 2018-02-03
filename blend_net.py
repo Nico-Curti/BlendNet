@@ -23,12 +23,6 @@ from matplotlib import colors as mcolors
 all_colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 all_colors = {name : mcolors.to_rgb(ash) for name, ash in all_colors.items()}
 
-## Colors to turn into materials
-#colors = {"purple": (178, 132, 234), "gray": (11, 11, 11),
-#          "green": (114, 195, 0), "red": (255, 0, 75),
-#          "blue": (0, 131, 255), "clear": (0, 131, 255),
-#          "yellow": (255, 187, 0), "light_gray": (118, 118, 118)}
-
 
 def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25):
     # edge obj
@@ -190,7 +184,7 @@ if __name__ == "__main__":
     
     description = "BlenderNet"
     parser = argparse.ArgumentParser(description = description)
-    parser.add_argument("-f", required=False, dest="filename", action="store", help="filename as json or networkx-json", default="")
+    parser.add_argument("-f", required=False, dest="filename", action="store", help="filename as networkx dataframe", default="")
     parser.add_argument("-e", required=False, dest="edges", action="store", help="string with edges", default="")
     parser.add_argument("-d", required=False, dest="dim", action="store", help="dimension to plot (2 or 3)", default=3)
     
@@ -213,7 +207,7 @@ if __name__ == "__main__":
         if 'COLORS' in data.columns:
             colors = data['COLORS']
         else:
-            colors = np.random.choice(all_colors.keys(), len(G.nodes))
+            colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
         is_coords = list(filter(lambda x: x in data.columns, ['X', 'Y']))
         if len(is_coords) != 0:
             if 'Z' in data.columns:
@@ -235,6 +229,6 @@ if __name__ == "__main__":
         if dim == 2:
             for key in position.keys():
                 position[key] = np.append(position[key], 0.)
-        colors = np.random.choice(all_colors.keys(), len(G.nodes))
+        colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
         
     blend_net(G, position, dim, colors)
