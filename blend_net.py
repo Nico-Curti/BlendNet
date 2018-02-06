@@ -16,7 +16,7 @@ import numpy as np # append numpy array
 import random # nrg
 # blender python
 import bpy 
-from math import acos#, degrees, pi
+from math import acos, degrees, pi
 from mathutils import Vector
 from matplotlib import colors as mcolors
 
@@ -100,6 +100,8 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
     bpy.ops.mesh.primitive_cylinder_add()
     cylinder = bpy.context.object
     cylinder.active_material = bpy.data.materials["light_gray"]
+    cone = bpy.context.object
+    cone.active_material = bpy.data.materials["light_gray"]
     
     # Keep references to all nodes and edges
     shapes = []
@@ -151,7 +153,7 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
         shapes_to_smooth.append(edge_cylinder)
 
         # Copy another mesh primitive to make an arrow head
-        if directed:
+        if direct:
             arrow_cone = cone.copy()
             arrow_cone.data = cone.data.copy()
             arrow_cone.dimensions = [edge_thickness * 4.0] * 3
@@ -165,6 +167,7 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
     bpy.ops.object.select_all(action='DESELECT')
     sphere.select = True
     cylinder.select = True
+    cone.select = True
     
     # If the starting cube is there, remove it
     if "Cube" in bpy.data.objects.keys():
@@ -209,7 +212,7 @@ if __name__ == "__main__":
     filename = args.filename
     edges = args.edges
     dim = int(args.dim)
-    direct = bool(args.direct)
+    direct = bool(int(args.direct))
     G = nx.Graph()
     
     if filename != "" and os.path.exists(filename):

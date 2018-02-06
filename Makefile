@@ -1,44 +1,47 @@
 edgelist = ""
 filename = ""
 dim = 3
+direct = 0
 
 define HELP_WIN
 **Blender viewer for graph** & @echo.\
-Usage:   make net [edgelist] [filename] [dim] & @echo.\
+Usage:   make draw [edgelist] [filename] [dim] & @echo.\
 & @echo.\
 optional arguments: & @echo.\
 .    edgelist - string of edges (python-like) & @echo.\
 .    filename - string with the name of file as csv & @echo.\
 .    dim      - number of dimension for network plot (2 or 3) & @echo.\
+.    direct   - bool for directed/undirected graph & @echo.\
 & @echo.\
 Note : & @echo.\
 - edgelist or filename are mutually exclusive & @echo.\
 - network file must be a csv with header names 'source','target',[colors],[x],[y],[z] & @echo.\
 .    where colors and x,y,z are optional (default random colors and spring layout) & @echo.\
 Example: & @echo.\
-make net edgelist='[[1,2],[2,3],[3,4]]' dim=3 & @echo.\
-make net filanem='mynet.csv' & @echo.\
+make draw edgelist='[[1,2],[2,3],[3,4]]' dim=3 & @echo.\
+make draw filename='mynet.csv' & @echo.\
 To beginner: & @echo.\
-.    make example 
+.    make test 
 endef
 define HELP_LINUX
 **Blender viewer for graph**
-Usage:	make net [edgelist] [filename] [dim]
+Usage:	make draw [edgelist] [filename] [dim]
 
 optional arguments: 
 	edgelist - string of edges (python-like) 
 	filename - string with the name of file as csv 
-	dim      - number of dimension for network plot (2 or 3) 
+	dim      - number of dimension for network plot (2 or 3)
+	direct   - bool for directed/undirected graph
 
 Note :
 - edgelist or filename are mutually exclusive
 - network file must be a csv with header names 'source','target',[colors],[x],[y],[z] 
     where colors and x,y,z are optional (default random colors and spring layout)
 Example: 
-make net edgelist='[[1,2],[2,3],[3,4]]' dim=3
-make net filanem='mynet.csv'
+make draw edgelist='[[1,2],[2,3],[3,4]]' dim=3
+make draw filename='mynet.csv'
 To beginner:
-	make example 
+	make test 
 endef
 
 export HELP_WIN
@@ -59,13 +62,13 @@ endif
 
 install: 	install.sh \
 		 	install.ps1
-		$(INSTALL) -y
+		@$(INSTALL) -y
 
 draw:
-	blender --python blend_net.py -- -e $(edgelist) -f $(filename) -d $(dim)
+	@blender --python blend_net.py -- -e $(edgelist) -f $(filename) -d $(dim) -x $(direct)
 
-example:
-	$(MAKE) draw edgelist='[[1,2],[2,3],[3,4]]' dim=3
+test:
+	@blender --python blend_net.py -- -e '[[1,2],[2,3],[3,4]]' -d 3 -x 0
 
 star_graph:
 	@python -c 'import networkx as nx; import pandas as pd;pd.DataFrame.from_records(data=list(nx.star_graph(n=8).edges)).to_csv("example/star_graph.csv", index=False, header=["Source", "Target"])'
