@@ -100,6 +100,7 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
     bpy.ops.mesh.primitive_cylinder_add()
     cylinder = bpy.context.object
     cylinder.active_material = bpy.data.materials["light_gray"]
+    bpy.ops.mesh.primitive_cone_add()
     cone = bpy.context.object
     cone.active_material = bpy.data.materials["light_gray"]
     
@@ -128,8 +129,8 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
     # Draw edges
     for source, target in graph.edges():
         # Get source and target locations by drilling down into data structure
-        source_loc = position[source]#network["nodes"][edge["source"]]["location"]
-        target_loc = position[target]#network["nodes"][edge["target"]]["location"]
+        source_loc = position[source]
+        target_loc = position[target]
 
         diff = [c2 - c1 for c2, c1 in zip(source_loc, target_loc)]
         cent = [(c2 + c1) / 2 for c2, c1 in zip(source_loc, target_loc)]
@@ -202,6 +203,8 @@ if __name__ == "__main__":
     parser.add_argument("-e", required=False, dest="edges", action="store", help="string with edges", default="")
     parser.add_argument("-d", required=False, dest="dim", action="store", help="dimension to plot (2 or 3)", default=3)
     parser.add_argument("-x", required=False, dest="direct", action="store", help="direct/undirect graph", default=False)
+    parser.add_argument("-s", required=False, dest="nsize", action="store", help="node size", default=3)
+    parser.add_argument("-l", required=False, dest="esize", action="store", help="edge thickness", default=.25)
     
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -213,6 +216,8 @@ if __name__ == "__main__":
     edges = args.edges
     dim = int(args.dim)
     direct = bool(int(args.direct))
+    node_size = float(args.nsize)
+    edge_thickness = float(args.esize)
     G = nx.Graph()
     
     if filename != "" and os.path.exists(filename):
@@ -247,4 +252,4 @@ if __name__ == "__main__":
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
         
-    blend_net(graph = G, position = position, dim = dim, colors = colors, node_size = 3, edge_thickness = .25, direct = direct )
+    blend_net(graph = G, position = position, dim = dim, colors = colors, node_size = node_size, edge_thickness = edge_thickness, direct = direct )

@@ -2,16 +2,20 @@ edgelist = ""
 filename = ""
 dim = 3
 direct = 0
+node_size = 3
+edge_thickness = 0.25
 
 define HELP_WIN
 **Blender viewer for graph** & @echo.\
 Usage:   make draw [edgelist] [filename] [dim] & @echo.\
 & @echo.\
 optional arguments: & @echo.\
-.    edgelist - string of edges (python-like) & @echo.\
-.    filename - string with the name of file as csv & @echo.\
-.    dim      - number of dimension for network plot (2 or 3) & @echo.\
-.    direct   - bool for directed/undirected graph & @echo.\
+.    edgelist       - string of edges (python-like) & @echo.\
+.    filename       - string with the name of file as csv & @echo.\
+.    dim            - number of dimension for network plot (2 or 3) & @echo.\
+.    direct         - bool for directed/undirected graph & @echo.\
+.    node_size      - float for node size & @echo.\
+.    edge_thickness - float for edges size & @echo.\
 & @echo.\
 Note : & @echo.\
 - edgelist or filename are mutually exclusive & @echo.\
@@ -28,10 +32,12 @@ define HELP_LINUX
 Usage:	make draw [edgelist] [filename] [dim]
 
 optional arguments: 
-	edgelist - string of edges (python-like) 
-	filename - string with the name of file as csv 
-	dim      - number of dimension for network plot (2 or 3)
-	direct   - bool for directed/undirected graph
+	edgelist       - string of edges (python-like) 
+	filename       - string with the name of file as csv 
+	dim            - number of dimension for network plot (2 or 3)
+	direct         - bool for directed/undirected graph
+	node_size      - float for node size
+    edge_thickness - float for edges size
 
 Note :
 - edgelist or filename are mutually exclusive
@@ -71,8 +77,16 @@ test:
 	@blender --python blend_net.py -- -e '[[1,2],[2,3],[3,4]]' -d 3 -x 0
 
 star_graph:
-	@python -c 'import networkx as nx; import pandas as pd;pd.DataFrame.from_records(data=list(nx.star_graph(n=8).edges)).to_csv("example/star_graph.csv", index=False, header=["Source", "Target"])'
+	@python -c 'import networkx as nx; import pandas as pd; pd.DataFrame.from_records(data=list(nx.star_graph(n=8).edges)).to_csv("example/star_graph.csv", index=False, header=["Source", "Target"])'
 	@blender --python blend_net.py -- -f "example/star_graph.csv" -d 3
+
+cycle_graph:
+	@python -c 'import networkx as nx; import pandas as pd; pd.DataFrame.from_records(data=list(nx.cycle_graph(n=300).edges)).to_csv("example/cycle_graph.csv", index=False, header=["Source", "Target"])'
+	@blender --python blend_net.py -- -f "example/cycle_graph.csv" -d 3 -s .5 -l .1
+
+complete_graph:
+	@python -c 'import networkx as nx; import pandas as pd; pd.DataFrame.from_records(data=list(nx.complete_graph(n=10).edges)).to_csv("example/complete_graph.csv", index=False, header=["Source", "Target"])'
+	@blender --python blend_net.py -- -f "example/complete_graph.csv" -d 3 -s 2.5 -l .1
 
 help:
 	@$(message)
