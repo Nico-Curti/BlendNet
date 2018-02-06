@@ -24,7 +24,7 @@ all_colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 all_colors = {name : mcolors.to_rgb(ash) for name, ash in all_colors.items()}
 
 
-def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25):
+def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, direct=False):
     # edge obj
     bpy.data.materials.new(name="light_gray")
     bpy.data.materials["light_gray"].diffuse_color = (0.4627450980392157, 0.4627450980392157, 0.4627450980392157)
@@ -149,6 +149,17 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25):
         bpy.context.scene.objects.link(edge_cylinder)
         shapes.append(edge_cylinder)
         shapes_to_smooth.append(edge_cylinder)
+
+        # Copy another mesh primitive to make an arrow head
+        if directed:
+            arrow_cone = cone.copy()
+            arrow_cone.data = cone.data.copy()
+            arrow_cone.dimensions = [edge_thickness * 4.0] * 3
+            arrow_cone.location = cent
+            arrow_cone.rotation_mode = "AXIS_ANGLE"
+            arrow_cone.rotation_axis_angle = [angle + pi] + list(v_rot)
+            bpy.context.scene.objects.link(arrow_cone)
+            shapes.append(arrow_cone)
         
     # Remove primitive meshes
     bpy.ops.object.select_all(action='DESELECT')
@@ -187,6 +198,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", required=False, dest="filename", action="store", help="filename as networkx dataframe", default="")
     parser.add_argument("-e", required=False, dest="edges", action="store", help="string with edges", default="")
     parser.add_argument("-d", required=False, dest="dim", action="store", help="dimension to plot (2 or 3)", default=3)
+    parser.add_argument("-x", required=False, dest="direct", action="store", help="direct/undirect graph", default=False)
     
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -197,6 +209,7 @@ if __name__ == "__main__":
     filename = args.filename
     edges = args.edges
     dim = int(args.dim)
+    direct = bool(args.direct)
     G = nx.Graph()
     
     if filename != "" and os.path.exists(filename):
@@ -231,4 +244,4 @@ if __name__ == "__main__":
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
         
-    blend_net(G, position, dim, colors)
+    blend_net(graph = G, position = position, dim = dim, colors = colors, node_size = 3, edge_thickness = .25, direct = direct )
