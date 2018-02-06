@@ -26,11 +26,11 @@ Write-Host "Looking for packages..."
 Write-Host "Blender identification: " -NoNewLine
 If( -Not (Get-Command blender -ErrorAction SilentlyContinue) ){ # blender not installed
     Write-Host "FOUND" -ForegroundColor Red
-    If( $args[0] -eq "-y" -Or $args[0] -eq "-Y" -Or $args[0] -eq "yes" ){ install_blender "https://builder.blender.org/download/blender-2.79-78a77fe-win64.zip" "." $true networkx, pandas, matplotlib, numpy }
+    If( $args[0] -eq "-y" -Or $args[0] -eq "-Y" -Or $args[0] -eq "yes" ){ install_blender "https://builder.blender.org/download/blender-2.79-a3409d3-win64.zip" "." $true networkx, pandas, matplotlib, numpy }
     Else{
         $CONFIRM = Read-Host -Prompt "Do you want install it? [y/n]"
         If($CONFIRM -eq "N" -Or $CONFIRM -eq "n"){ Write-Host "Abort" -ForegroundColor Red }
-        Else{ install_blender "https://builder.blender.org/download/blender-2.79-78a77fe-win64.zip" "." $true networkx, pandas, matplotlib, numpy }
+        Else{ install_blender "https://builder.blender.org/download/blender-2.79-a3409d3-win64.zip" "." $true networkx, pandas, matplotlib, numpy }
     }
 }
 Else{ Write-Host "FOUND" -ForegroundColor Green}

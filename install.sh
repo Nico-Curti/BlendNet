@@ -25,11 +25,11 @@ echo "Looking for packages..."
 printf "Blender identification: "
 if [ $(which blender) == "" ]; then
 	echo ${red}"NOT FOUND"${reset}
-	if [ "$3" == "-y" ] || [ "$3" == "-Y" ] || [ "$3" == "yes" ]; then install_blender "https://builder.blender.org/download/blender-2.79-78a77fe622b-linux-glibc219-x86_64.tar.bz2" "." true networkx pandas matplotlib numpy;
+	if [ "$3" == "-y" ] || [ "$3" == "-Y" ] || [ "$3" == "yes" ]; then install_blender "https://builder.blender.org/download/blender-2.79-ce3e0afe597-linux-glibc219-x86_64.tar.bz2" "." true networkx pandas matplotlib numpy;
 	else
 		read -p "Do you want install it? [y/n] " confirm
 		if [ "$CONFIRM" == "n" ] || [ "$CONFIRM" == "N" ]; then echo ${red}"Abort"${reset};
-		else install_blender "https://builder.blender.org/download/blender-2.79-78a77fe622b-linux-glibc219-x86_64.tar.bz2" "." true networkx pandas matplotlib numpy;
+		else install_blender "https://builder.blender.org/download/blender-2.79-ce3e0afe597-linux-glibc219-x86_64.tar.bz2" "." true networkx pandas matplotlib numpy;
 		fi
 	fi
 else echo ${green}"FOUND"${reset};
