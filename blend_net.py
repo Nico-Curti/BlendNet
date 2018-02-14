@@ -275,9 +275,9 @@ if __name__ == "__main__":
         is_coords = list(filter(lambda x: x in nodes.columns, ['X', 'Y']))
         if len(is_coords) != 0:
             if 'Z' in nodes.columns:
-                position = nodes[['X', 'Y', 'Z']].values
+                position = {n : (x,y,z) for n,(x,y,z) in nodes[["X", "Y", "Z"]].iterrows()}
             else:
-                position = nodes[['X', 'Y']].values
+                position = {n : (x,y,0.) for n,(x,y) in nodes[["X", "Y"]].iterrows()}
         else:
             position = nx.spring_layout(G, dim=dim, scale=10)
             if dim == 2:
@@ -300,9 +300,9 @@ if __name__ == "__main__":
         is_coords = list(filter(lambda x: x in nodes.columns, ['X', 'Y']))
         if len(is_coords) != 0:
             if 'Z' in nodes.columns:
-                position = nodes[['X', 'Y', 'Z']].values
+                position = {n : (x,y,z) for n,(x,y,z) in nodes[["X", "Y", "Z"]].iterrows()}
             else:
-                position = nodes[['X', 'Y']].values
+                position = {n : (x,y,0.) for n,(x,y) in nodes[["X", "Y"]].iterrows()}
         else:
             position = nx.spring_layout(G, dim=dim, scale=10)
             if dim == 2:

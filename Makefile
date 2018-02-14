@@ -9,7 +9,7 @@ edge_thickness = 0.25
 
 define HELP_WIN
 **Blender viewer for graph** & @echo.\
-Usage:   make draw [edgelist] [filename] [dim] & @echo.\
+Usage:   make draw [edgelist] [edgefile] [nodelist] [nodefile] [dim] [direct] [node_size] [edge_thickness] & @echo.\
 & @echo.\
 optional arguments: & @echo.\
 .    edgelist       - string of edges (python-like) & @echo.\
@@ -28,13 +28,13 @@ Note : & @echo.\
 .    where node, colors and x,y,z are optional (default random colors and spring layout) & @echo.\
 Example: & @echo.\
 make draw edgelist='[[0,1],[1,2],[2,3]]' dim=3 & @echo.\
-make draw filename='mynet.csv' & @echo.\
+make draw edgefile='mynet.csv' & @echo.\
 To beginner: & @echo.\
 .    make test 
 endef
 define HELP_LINUX
 **Blender viewer for graph**
-Usage:  make draw [edgelist] [filename] [dim]
+Usage:  make draw [edgelist] [edgefile] [nodelist] [nodefile] [dim] [direct] [node_size] [edge_thickness]
 
 optional arguments: 
 	edgelist       - string of edges (python-like)
@@ -52,7 +52,7 @@ Note :
 - nodes file must be a csv with header names 'node',[colors],[x],[y],[z] 
 	where node, colors and x,y,z are optional (default random colors and spring layout)
 Example: 
-make draw edgelist='[[0,1],[1,2],[2,3]]' dim=3
+make draw edgefile='[[0,1],[1,2],[2,3]]' dim=3
 make draw filename='mynet.csv'
 To beginner:
 	make test 
@@ -79,7 +79,7 @@ install:    install.sh \
 		@$(INSTALL) -y
 
 draw:
-	@blender --python blend_net.py -- -e $(edgelist) -f $(filename) -d $(dim) -x $(direct)
+	@blender --python blend_net.py -- -e $(edgelist) -E $(edgefile) -n $(nodelist) -N $(nodefile) -d $(dim) -x $(direct) -s $(node_size) -l $(edge_thickness) 
 
 test:
 	@blender --python blend_net.py -- -e '[[0,1],[1,2],[2,3]]' -d 3 -x 0
