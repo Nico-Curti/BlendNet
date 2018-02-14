@@ -47,7 +47,6 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
         bpy.data.materials[color].raytrace_transparency.fresnel = 0.1
         bpy.data.materials[color].raytrace_transparency.ior = 1.15
 
-
     # Set scene, light and alpha_mode
     scene = bpy.context.scene
     scene.render.engine = 'BLENDER_RENDER' # 'CYCLE'
@@ -113,7 +112,7 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
     nx.set_node_attributes(G, [], "color")
     for node in graph.nodes():
         # Coloring rule for nodes. Edit this to suit your needs!
-        col = random.choice(colors)
+        col = colors[node]
         
         # Copy mesh primitive and edit to make node
         # (You can change the shape of drawn nodes here)
@@ -199,8 +198,10 @@ if __name__ == "__main__":
     
     description = "BlenderNet"
     parser = argparse.ArgumentParser(description = description)
-    parser.add_argument("-f", required=False, dest="filename", action="store", help="filename as networkx dataframe", default="")
+    parser.add_argument("-E", required=False, dest="edgelist", action="store", help="edgelist filename as networkx dataframe", default="")
+    parser.add_argument("-N", required=False, dest="nodelist", action="store", help="nodelist filename as networkx dataframe", default="")
     parser.add_argument("-e", required=False, dest="edges", action="store", help="string with edges", default="")
+    parser.add_argument("-n", required=False, dest="nodes", action="store", help="string with nodes", default="")
     parser.add_argument("-d", required=False, dest="dim", action="store", help="dimension to plot (2 or 3)", default=3)
     parser.add_argument("-x", required=False, dest="direct", action="store", help="direct/undirect graph", default=False)
     parser.add_argument("-s", required=False, dest="nsize", action="store", help="node size", default=3)
@@ -212,44 +213,103 @@ if __name__ == "__main__":
     else:
         args = parser.parse_args(argv)
     
-    filename = args.filename
+    edgelist = args.edgelist
+    nodelist = args.nodelist
     edges = args.edges
+    nodes = args.nodes
     dim = int(args.dim)
     direct = bool(int(args.direct))
     node_size = float(args.nsize)
     edge_thickness = float(args.esize)
     G = nx.Graph()
-    
-    if filename != "" and os.path.exists(filename):
-        data = pd.read_csv(filename, sep=",", header=0)
-        data.columns = [str(c).upper() for c in data.columns]
-        edges = data[['SOURCE', 'TARGET']].values
-        G.add_edges_from(edges)
-        if 'COLORS' in data.columns:
-            colors = data['COLORS']
-        else:
-            colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
-        is_coords = list(filter(lambda x: x in data.columns, ['X', 'Y']))
-        if len(is_coords) != 0:
-            if 'Z' in data.columns:
-                position = data[['X', 'Y', 'Z']]
-            else:
-                position = data[['X', 'Y']]
-        else:
-            position = nx.spring_layout(G, dim=dim, scale=10)
-            if dim == 2:
-                for key in position.keys():
-                    position[key] = np.append(position[key], 0.)
 
-    elif edges == "" and filename == "":
+    if edgelist != "" and not os.path.exists(edgelist):
         parser.print_help()
         sys.exit(1)
-    else:
+    if nodelist != "" and not os.path.exists(nodelist):
+        parser.print_help()
+        sys.exit(1)
+
+    cases = [edges != "", edgelist != "", nodes != "", nodelist != ""] # cases input array 
+
+    if np.all(cases == [1, 0, 0, 0]): # edges as string found
         G.add_edges_from(ast.literal_eval(edges))
         position = nx.spring_layout(G, dim=dim, scale=10)
         if dim == 2:
             for key in position.keys():
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+    elif np.all(cases == [0, 0, 1, 0]): # nodes as string found
+        G.add_nodes_from(ast.literal_eval(nodes))
+        position = nx.spring_layout(G, dim=dim, scale=10)
+        if dim == 2:
+            for key in position.keys():
+                position[key] = np.append(position[key], 0.)
+        colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+    elif np.all(cases == [1, 0, 1, 0]): # edges as string AND nodes as string found
+        G.add_nodes_from(ast.literal_eval(nodes))
+        G.add_edges_from(ast.literal_eval(edges))
+        position = nx.spring_layout(G, dim=dim, scale=10)
+        if dim == 2:
+            for key in position.keys():
+                position[key] = np.append(position[key], 0.)
+        colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+    elif np.all(cases == [0, 1, 0, 0]): # edges as file found
+        edges = pd.read_csv(edgelist, sep=",", header=0)
+        edges.columns = [str(c).upper() for c in edges.columns]
+        edges = edges[['SOURCE', 'TARGET']].values
+        G.add_edges_from(edges)
+        position = nx.spring_layout(G, dim=dim, scale=10)
+        if dim == 2:
+            for key in position.keys():
+                position[key] = np.append(position[key], 0.)
+        colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+    elif np.all(cases == [0, 0, 0, 1]): # nodes as file found
+        nodes = pd.read_csv(nodelist, sep=",", header=0)
+        nodes.columns = [str(c).upper() for c in nodes.columns]
+        node = nodes['NODE'].values
+        if 'COLORS' in nodes.columns:
+            colors = nodes['COLORS'].values
+        else:
+            colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        is_coords = list(filter(lambda x: x in nodes.columns, ['X', 'Y']))
+        if len(is_coords) != 0:
+            if 'Z' in nodes.columns:
+                position = nodes[['X', 'Y', 'Z']].values
+            else:
+                position = nodes[['X', 'Y']].values
+        else:
+            position = nx.spring_layout(G, dim=dim, scale=10)
+            if dim == 2:
+                for key in position.keys():
+                    position[key] = np.append(position[key], 0.)
+    elif np.all(cases == [0, 1, 0, 1]): # edges as file AND nodes as file found
+        edges = pd.read_csv(edgelist, sep=",", header=0)
+        edges.columns = [str(c).upper() for c in edges.columns]
+        edges = edges[['SOURCE', 'TARGET']].values
+        G.add_edges_from(edges)
+        nodes = pd.read_csv(nodelist, sep=",", header=0)
+        nodes.columns = [str(c).upper() for c in nodes.columns]
+        if 'NODE' in nodes.columns:
+            node = nodes['NODE'].values
+            G.add_nodes_from(node)
+        if 'COLORS' in nodes.columns:
+            colors = nodes['COLORS'].values
+        else:
+            colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        is_coords = list(filter(lambda x: x in nodes.columns, ['X', 'Y']))
+        if len(is_coords) != 0:
+            if 'Z' in nodes.columns:
+                position = nodes[['X', 'Y', 'Z']].values
+            else:
+                position = nodes[['X', 'Y']].values
+        else:
+            position = nx.spring_layout(G, dim=dim, scale=10)
+            if dim == 2:
+                for key in position.keys():
+                    position[key] = np.append(position[key], 0.)
+    else:
+        parser.print_help()
+        sys.exit(1)
         
     blend_net(graph = G, position = position, dim = dim, colors = colors, node_size = node_size, edge_thickness = edge_thickness, direct = direct )
