@@ -97,7 +97,7 @@ complete_graph:
 	@blender --python blend_net.py -- -E "example/complete_graph.csv" -d 3 -s 2.5 -l .1
 
 test_node:
-	@python -c 'import networkx as nx; import pandas as pd; edges = pd.read_csv("example/star_graph.csv"); G = nx.Graph(); edges.columns = [str(c).upper() for c in edges.columns]; edges = edges[["SOURCE", "TARGET"]].values; G.add_edges_from(edges); colors = ["blue" if G.degree[n] <= 1 else "red" for n in G.nodes]; nodes = pd.DataFrame(data = [list(G.nodes), colors], index = ["node", "colors"]).T; nodes.to_csv("example/star_graph_node.csv", sep=",", index=False)'
+	@python -c 'import networkx as nx; import pandas as pd; edges = pd.read_csv("example/star_graph.csv"); G = nx.Graph(); edges.columns = [str(c).upper() for c in edges.columns]; edges = edges[["SOURCE", "TARGET"]].values; G.add_edges_from(edges); colors = ["blue" if G.degree[n] <= 1 else "red" for n in G.nodes]; names = [x for x in [chr(i) for i in range(ord("A"),ord("J"))]]; nodes = pd.DataFrame(data = [list(G.nodes), colors, names], index = ["node", "colors", "names"]).T; nodes.to_csv("example/star_graph_node.csv", sep=",", index=False)'
 	@blender --python blend_net.py -- -E "example/star_graph.csv" -d 3 -N "example/star_graph_node.csv"
 
 help:

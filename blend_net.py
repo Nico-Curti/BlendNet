@@ -24,14 +24,13 @@ all_colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 all_colors = {name : mcolors.to_rgb(ash) for name, ash in all_colors.items()}
 
 
-def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, direct=False):
+def blend_net(graph, position, dim, colors, label, node_size=3, edge_thickness=0.25, direct=False):
     # edge obj
     bpy.data.materials.new(name="light_gray")
     bpy.data.materials["light_gray"].diffuse_color = (0.4627450980392157, 0.4627450980392157, 0.4627450980392157)
     bpy.data.materials["light_gray"].specular_intensity = 0.5
     # sphere obj
     for color in colors:
-        #color = [x / 255.0 for x in name_to_rgb(color)]
         bpy.data.materials.new(name=color)
         bpy.data.materials[color].diffuse_color = all_colors[color]
         bpy.data.materials[color].specular_intensity = 0.5
@@ -46,13 +45,17 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
         bpy.data.materials[color].alpha = 0.1 if color == "clear" else 0.95
         bpy.data.materials[color].raytrace_transparency.fresnel = 0.1
         bpy.data.materials[color].raytrace_transparency.ior = 1.15
-
+    # text obj
+    text = bpy.data.objects.new("label", bpy.data.curves.new(type="FONT", name="curve"))
+    bpy.data.materials.new(name="black")
+    bpy.data.materials["black"].diffuse_color = (0, 0, 0)
+    bpy.data.materials["black"].specular_intensity = 0.5
+    
     # Set scene, light and alpha_mode
     scene = bpy.context.scene
     scene.render.engine = 'BLENDER_RENDER' # 'CYCLE'
     scene.render.alpha_mode = 'TRANSPARENT' # remove background
-    #camera = bpy.context.scene.camera
-    #camera.data.type = 'PERSP'
+
     area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
     area.spaces[0].region_3d.view_perspective = 'CAMERA'
 
@@ -66,6 +69,7 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
             loc_camera = obj.matrix_world.to_translation()
             mean_x = np.mean([el[0] for el in position.values()])
             mean_y = np.mean([el[1] for el in position.values()])
+            mean_z = 0.
             obj.location.x = mean_x
             obj.location.y = mean_y
 
@@ -124,6 +128,16 @@ def blend_net(graph, position, dim, colors, node_size=3, edge_thickness=0.25, di
         bpy.context.scene.objects.link(node_sphere)
         shapes.append(node_sphere)
         shapes_to_smooth.append(node_sphere)
+
+        if label[node] != "":
+            lbl = text.copy()
+            lbl.data = text.data.copy()
+            lbl.data.body = label[node]
+            lbl.rotation_mode = "AXIS_ANGLE"
+            lbl.rotation_euler = (0.0, 0.0, np.radians(90))
+            lbl.active_material = bpy.data.materials["black"]
+            lbl.location = position[node] + [0., 0., node_size/2]
+            bpy.context.scene.objects.link(lbl)
         
     # Draw edges
     for source, target in graph.edges():
@@ -239,6 +253,7 @@ if __name__ == "__main__":
             for key in position.keys():
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        names = ["" for i in range(len(nodes))]
     elif np.all(cases == [0, 0, 1, 0]): # nodes as string found
         G.add_nodes_from(ast.literal_eval(nodes))
         position = nx.spring_layout(G, dim=dim, scale=10)
@@ -246,6 +261,7 @@ if __name__ == "__main__":
             for key in position.keys():
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        names = ["" for i in range(len(nodes))]
     elif np.all(cases == [1, 0, 1, 0]): # edges as string AND nodes as string found
         G.add_nodes_from(ast.literal_eval(nodes))
         G.add_edges_from(ast.literal_eval(edges))
@@ -254,6 +270,7 @@ if __name__ == "__main__":
             for key in position.keys():
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        names = ["" for i in range(len(nodes))]
     elif np.all(cases == [0, 1, 0, 0]): # edges as file found
         edges = pd.read_csv(edgelist, sep=",", header=0)
         edges.columns = [str(c).upper() for c in edges.columns]
@@ -264,6 +281,7 @@ if __name__ == "__main__":
             for key in position.keys():
                 position[key] = np.append(position[key], 0.)
         colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        names = ["" for i in range(len(nodes))]
     elif np.all(cases == [0, 0, 0, 1]): # nodes as file found
         nodes = pd.read_csv(nodelist, sep=",", header=0)
         nodes.columns = [str(c).upper() for c in nodes.columns]
@@ -272,6 +290,10 @@ if __name__ == "__main__":
             colors = nodes['COLORS'].values
         else:
             colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        if 'NAMES' in nodes.columns:
+            names = nodes['NAMES'].values
+        else:
+            names = ["" for i in range(len(nodes))]
         is_coords = list(filter(lambda x: x in nodes.columns, ['X', 'Y']))
         if len(is_coords) != 0:
             if 'Z' in nodes.columns:
@@ -297,6 +319,10 @@ if __name__ == "__main__":
             colors = nodes['COLORS'].values
         else:
             colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
+        if 'NAMES' in nodes.columns:
+            names = nodes['NAMES'].values
+        else:
+            names = ["" for i in range(len(nodes))]
         is_coords = list(filter(lambda x: x in nodes.columns, ['X', 'Y']))
         if len(is_coords) != 0:
             if 'Z' in nodes.columns:
@@ -312,4 +338,5 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
         
-    blend_net(graph = G, position = position, dim = dim, colors = colors, node_size = node_size, edge_thickness = edge_thickness, direct = direct )
+    blend_net(graph = G, position = position, dim = dim, colors = colors, label = names, node_size = node_size, edge_thickness = edge_thickness, direct = direct )
+
