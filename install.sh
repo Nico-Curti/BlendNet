@@ -13,9 +13,9 @@ yellow=`tput setaf 3`
 reset=`tput sgr0`
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	url_blender="https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.79/blender-2.79-macOS-10.6.tar.gz"
+    url_blender="https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.79/blender-2.79-macOS-10.6.tar.gz"
 else
-	url_blender="https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2"
+    url_blender="https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2"
 fi
 
 printf ${yellow}"Installing $project dependecies:\n"${reset}
@@ -34,18 +34,7 @@ log="install_$project.log"
 echo "Looking for packages..."
 
 # Blender download
-printf "Blender identification: "
-if [ $(which blender) == "" ]; then
-	echo ${red}"NOT FOUND"${reset}
-	if [ "$3" == "-y" ] || [ "$3" == "-Y" ] || [ "$3" == "yes" ]; then install_blender $url_blender "." true networkx pandas matplotlib numpy >> $log;
-	else
-		read -p "Do you want install it? [y/n] " confirm
-		if [ "$CONFIRM" == "n" ] || [ "$CONFIRM" == "N" ]; then echo ${red}"Abort"${reset};
-		else install_blender $url_blender "." true networkx pandas matplotlib numpy >> $log;
-		fi
-	fi
-else echo ${green}"FOUND"${reset};
-fi
+install_blender $1 true networkx pandas matplotlib numpy >> $log;
 
 popd > /dev/null
 

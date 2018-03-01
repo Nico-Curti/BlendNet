@@ -11,7 +11,6 @@ import sys # exit
 import os # exists file
 import argparse # parse command line
 import ast # convert string to list
-import json # file as json
 import numpy as np # append numpy array
 import random # nrg
 # blender python
@@ -113,7 +112,7 @@ def blend_net(graph, position, dim, colors, label, node_size=3, edge_thickness=0
     shapes_to_smooth = []
     
     # Draw nodes
-    nx.set_node_attributes(G, [], "color")
+    nx.set_node_attributes(graph, [], "color")
     for node in graph.nodes():
         # Coloring rule for nodes. Edit this to suit your needs!
         col = colors[node]
