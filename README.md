@@ -12,7 +12,7 @@
 
 <a href="https://github.com/Nico-Curti/blend_net/blob/master/example/star_graph.png">
 <div class="image">
-<img src="https://github.com/Nico-Curti/blend_net/blob/master/example/star_graph.png" width="180" height="180">
+<img src="https://github.com/Nico-Curti/blend_net/blob/master/example/star_graph.png" width="960" height="540">
 </div>
 </a>
 
