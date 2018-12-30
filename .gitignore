@@ -54,7 +54,7 @@ Desktop.ini
 *.iobj
 *.ipdb
 *.db
-
+*.csv
 
 # Build results
 [Dd]ebug/

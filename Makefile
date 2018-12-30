@@ -30,13 +30,13 @@ Example: & @echo.\
 make draw edgelist='[[0,1],[1,2],[2,3]]' dim=3 & @echo.\
 make draw edgefile='mynet.csv' & @echo.\
 To beginner: & @echo.\
-.    make test 
+.    make test
 endef
 define HELP_LINUX
 **Blender viewer for graph**
 Usage:  make draw [edgelist] [edgefile] [nodelist] [nodefile] [dim] [direct] [node_size] [edge_thickness]
 
-optional arguments: 
+optional arguments:
 	edgelist       - string of edges (python-like)
 	edgefile       - string with the name of file as csv
 	nodelist       - string of nodes (python-like)
@@ -49,13 +49,13 @@ optional arguments:
 Note :
 - edgelist or edgefile are mutually exclusive as nodelist and nodefile
 - edges file must be a csv with header names 'source','target'
-- nodes file must be a csv with header names 'node',[colors],[x],[y],[z] 
+- nodes file must be a csv with header names 'node',[colors],[x],[y],[z]
 	where node, colors and x,y,z are optional (default random colors and spring layout)
-Example: 
+Example:
 make draw edgefile='[[0,1],[1,2],[2,3]]' dim=3
 make draw filename='mynet.csv'
 To beginner:
-	make test 
+	make test
 endef
 
 export HELP_WIN
@@ -66,20 +66,17 @@ ifeq ($(OS), Windows_NT)
 	INSTALL = ./install.ps1
 	message = set TAB=  & @echo %HELP_WIN%
 else
-	MKDIR_P = mkdir -p $(OUT) 
+	MKDIR_P = mkdir -p $(OUT)
 	INSTALL = ./install.sh
 	message = echo "$$HELP_LINUX"
 endif
-
-
-
 
 install:    install.sh \
 			install.ps1
 		@$(INSTALL) -y
 
 draw:
-	@blender --python blend_net.py -- -e $(edgelist) -E $(edgefile) -n $(nodelist) -N $(nodefile) -d $(dim) -x $(direct) -s $(node_size) -l $(edge_thickness) 
+	@blender --python blend_net.py -- -e $(edgelist) -E $(edgefile) -n $(nodelist) -N $(nodefile) -d $(dim) -x $(direct) -s $(node_size) -l $(edge_thickness)
 
 test:
 	@blender --python blend_net.py -- -e '[[0,1],[1,2],[2,3]]' -d 3 -x 0

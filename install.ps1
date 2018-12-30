@@ -1,19 +1,35 @@
 #!/usr/bin/env pwsh
 
+# $args[0] = -y
+# $args[1] = installation path from root
+# $args[2] = silent mode (true/false)
+
+$confirm = $args[0]
+If( $args[1] -eq $null )
+{
+  $path2out = "toolchain"
+} # specify path to install programs
+Else
+{
+  $path2out = $args[1]
+}
+$silent = $args[2]
+
+$PROFILE
+
 $project = "Blender Graph Viewer"
-$log = "install_$project.log" 
+$log = "install_$project.log"
 
 # For the right Permission
 # Set-ExecutionPolicy Bypass -Scope CurrentUser
 
 $Documents = [Environment]::GetFolderPath('MyDocuments')
 
+
 Write-Host "Installing $project dependecies:" -ForegroundColor Yellow
 Write-Host "  - Blender (networkx, pandas, matplotlib and numpy)"
-. ".\shell_utils\pwsh\install_blender.ps1"
+. ".\shut\pwsh\install_blender.ps1"
 
-If( $args[1] -eq $null ) { $path2out = "toolchain" } # specify path to install programs
-Else {  $path2out = $args[1] }
 Write-Host "Installation path : $env:HOMEDRIVE$env:HOMEPATH\$path2out" -ForegroundColor Green
 
 Push-Location
@@ -25,8 +41,14 @@ Set-Location $path2out
 Write-Host "Looking for packages..."
 
 # Blender download
-Start-Transcript -Append -Path $log
-install_blender -add2path $true -confirm $args[0] -modules networkx, pandas, matplotlib, numpy
-Stop-Transcript
+if ( $silent )
+{
+  Start-Transcript -Append -Path $log
+}
+install_blender -add2path $true -confirm $confirm -modules networkx, pandas, matplotlib, numpy
+if ( $silent )
+{
+  Stop-Transcript
+}
 
 Pop-Location > $null

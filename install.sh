@@ -2,39 +2,46 @@
 
 # $1 = -y
 # $2 = installation path from root
+# $3 = silent mode (true/false)
+
+confirm=$1
+if [ "$2" == "" ]; then
+  path2out="toolchain"
+else
+  path2out=$2
+fi
+silent=$3
 
 source ~/.bashrc
 
 project="Blender Graph Viewer"
+log="install_$project.log"
 
 red=`tput setaf 1`
 green=`tput setaf 2`
 yellow=`tput setaf 3`
 reset=`tput sgr0`
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    url_blender="https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.79/blender-2.79-macOS-10.6.tar.gz"
-else
-    url_blender="https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2"
-fi
+echo ${yellow}"Installing $project dependecies:"${reset}
+echo " - Blender (networkx, pandas, matplotlib and numpy)"
+source ./shut/bash/install_blender.sh
 
-printf ${yellow}"Installing $project dependecies:\n"${reset}
-printf " - Blender (networkx, pandas, matplotlib and numpy)\n"
-source ./shell_utils/bash/install_blender.sh
-
-if [ "$2" == "" ]; then path2out="toolchain"; else path2out=$2; fi
-printf ${green}"Installation path : "~/$path2out"\n"${reset}
+echo "Installation path : "${green}$path2out${reset}
 
 pushd $HOME > /dev/null
 mkdir -p $path2out
 cd $path2out
 
-log="install_$project.log"
-
 echo "Looking for packages..."
+# clean old log file
+rm -f $log
 
 # Blender download
-install_blender $1 true networkx pandas matplotlib numpy >> $log;
+if [ $silent ]; then
+  install_blender $confirm true networkx pandas matplotlib numpy >> $log;
+else
+  install_blender $confirm true networkx pandas matplotlib numpy;
+fi
 
 popd > /dev/null
 
