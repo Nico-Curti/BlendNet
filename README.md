@@ -123,7 +123,7 @@ If you have found `BlendNet` helpful in your research, please consider citing th
 ```tex
 @misc{BlendNet,
   author = {Nico Curti},
-  title = {{B}lend{N}et},
+  title = {BlendNet},
   year = {2019},
   publisher = {GitHub},
   howpublished = {\url{https://github.com/Nico-Curti/BlendNet}},
