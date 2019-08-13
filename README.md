@@ -1,6 +1,6 @@
 | **Authors**                                     | **Project** | **Build Status**              |
 |:-----------------------------------------------:|:-----------:|:-----------------------------:|
-|   [**N. Curti**](https://github.com/Nico-Curti) | **BlendNet**| **Linux/OSX** : [![travis]((https://travis-ci.org/Nico-Curti/BlendNet.svg?branch=master)](https://travis-ci.com/Nico-Curti/BlendNet) <br/> **Windows** : [![Windows](https://ci.appveyor.com/api/projects/status/1unn2dg52kui34la?svg=true)](https://ci.appveyor.com/project/Nico-Curti/blendnet) |
+|   [**N. Curti**](https://github.com/Nico-Curti) | **BlendNet**| **Linux/OSX** : [![travis](https://travis-ci.com/Nico-Curti/BlendNet.svg?branch=master)](https://travis-ci.com/Nico-Curti/BlendNet) <br/> **Windows** : [![Windows](https://ci.appveyor.com/api/projects/status/1unn2dg52kui34la?svg=true)](https://ci.appveyor.com/project/Nico-Curti/blendnet) |
 
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/Nico-Curti/BlendNet.svg?style=plastic)](https://github.com/Nico-Curti/BlendNet/pulls)
 [![GitHub issues](https://img.shields.io/github/issues/Nico-Curti/BlendNet.svg?style=plastic)](https://github.com/Nico-Curti/BlendNet/issues)
