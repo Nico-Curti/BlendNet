@@ -118,7 +118,7 @@ and to Raffaele Pepe who help me with Blender instructions.
 
 ### Citation
 
-If you have found `BlendNet` helpful in your research, please consider citing the
+If you have found `BlendNet` helpful in your research, please consider citing the project
 
 ```tex
 @misc{BlendNet,
