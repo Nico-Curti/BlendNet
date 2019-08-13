@@ -15,16 +15,16 @@ Else
 }
 $silent = $args[2]
 
-$PROFILE
+$Documents = [Environment]::GetFolderPath('MyDocuments')
+New-Item $Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1 -type file -ErrorAction SilentlyContinue
+Set-Variable -Name "PROFILE" -Value "$Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+. "$PROFILE"
 
 $project = "Blender Graph Viewer"
 $log = "install_$project.log"
 
 # For the right Permission
 # Set-ExecutionPolicy Bypass -Scope CurrentUser
-
-$Documents = [Environment]::GetFolderPath('MyDocuments')
-
 
 Write-Host "Installing $project dependecies:" -ForegroundColor Yellow
 Write-Host "  - Blender (networkx, pandas, matplotlib and numpy)"
@@ -39,8 +39,10 @@ New-Item -Path $Documents\WindowsPowerShell -ItemType directory -Force > $null
 Set-Location $path2out
 
 Write-Host "Looking for packages..."
+Remove-Item $log -Force -Recurse -ErrorAction SilentlyContinue
 
-# Blender download
+# Blender Installer
+Write-Host "Installation Blender"
 if ( $silent )
 {
   Start-Transcript -Append -Path $log
@@ -50,5 +52,8 @@ if ( $silent )
 {
   Stop-Transcript
 }
+. "$PROFILE"
 
 Pop-Location > $null
+
+exit 0
