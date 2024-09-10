@@ -4,8 +4,14 @@
 from __future__ import division
 from __future__ import print_function
 
+import sys  # search path for external packages
+import site # get the user site-package directory
+
+user_site_pkgs = site.getusersitepackages()
+if user_site_pkgs not in sys.path:
+  sys.path.append(user_site_pkgs)
+
 import os              # exists file
-import sys             # exit
 import ast             # convert string to list
 import argparse        # parse command line
 import numpy as np     # append numpy array
@@ -24,7 +30,7 @@ __author__  = ['Nico Curti']
 __email__   = ['nico.curti2@unibo.it']
 
 all_colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-all_colors = {name : mcolors.to_rgb(ash) for name, ash in all_colors.items()}
+all_colors = {name : mcolors.to_rgba(ash) for name, ash in all_colors.items()}
 
 
 def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
@@ -60,7 +66,7 @@ def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
 
   # edge obj
   bpy.data.materials.new(name='light_gray')
-  bpy.data.materials['light_gray'].diffuse_color = (0.4627450980392157, 0.4627450980392157, 0.4627450980392157)
+  bpy.data.materials['light_gray'].diffuse_color = (0.4627450980392157, 0.4627450980392157, 0.4627450980392157, 1.0)
   bpy.data.materials['light_gray'].specular_intensity = 0.5
 
   # sphere obj
@@ -75,28 +81,28 @@ def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
       continue
 
     # Transparency parameters
-    bpy.data.materials[color].use_transparency = True
-    bpy.data.materials[color].transparency_method = 'RAYTRACE'
-    bpy.data.materials[color].alpha = 0.1 if color == 'clear' else 0.95
-    bpy.data.materials[color].raytrace_transparency.fresnel = 0.1
-    bpy.data.materials[color].raytrace_transparency.ior = 1.15
+    #bpy.data.materials[color].use_transparency = True
+    #bpy.data.materials[color].transparency_method = 'RAYTRACE'
+    #bpy.data.materials[color].alpha = 0.1 if color == 'clear' else 0.95
+    #bpy.data.materials[color].raytrace_transparency.fresnel = 0.1
+    #bpy.data.materials[color].raytrace_transparency.ior = 1.15
 
   # text obj
   text = bpy.data.objects.new('label', bpy.data.curves.new(type='FONT', name='curve'))
   bpy.data.materials.new(name='black')
-  bpy.data.materials['black'].diffuse_color = (0, 0, 0)
+  bpy.data.materials['black'].diffuse_color = (0, 0, 0, 1.0)
   bpy.data.materials['black'].specular_intensity = 0.5
 
   # Set scene, light and alpha_mode
   scene = bpy.context.scene
-  scene.render.engine = 'BLENDER_RENDER' # 'CYCLE'
-  scene.render.alpha_mode = 'TRANSPARENT' # remove background
+  #scene.render.engine = 'BLENDER_RENDER' # 'CYCLE'
+  #scene.render.alpha_mode = 'TRANSPARENT' # remove background
 
   area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
   area.spaces[0].region_3d.view_perspective = 'CAMERA'
 
-  bpy.data.worlds['World'].light_settings.use_ambient_occlusion = True
-  bpy.data.worlds['World'].light_settings.samples = 10
+  #bpy.data.worlds['World'].light_settings.use_ambient_occlusion = True
+  #bpy.data.worlds['World'].light_settings.samples = 10
 
   # camera position
 
@@ -171,7 +177,7 @@ def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
     node_sphere.location = position[node]
     node_sphere.dimensions = [node_size] * 3
     node_sphere.active_material = bpy.data.materials[col]
-    bpy.context.scene.objects.link(node_sphere)
+    bpy.context.collection.objects.link(node_sphere)
     shapes.append(node_sphere)
     shapes_to_smooth.append(node_sphere)
 
@@ -183,7 +189,7 @@ def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
       lbl.rotation_euler = (0.0, 0.0, np.radians(90))
       lbl.active_material = bpy.data.materials['black']
       lbl.location = position[node] + [0., 0., node_size * .5]
-      bpy.context.scene.objects.link(lbl)
+      bpy.context.collection.objects.link(lbl)
 
   # Draw edges
   for source, target in graph.edges():
@@ -208,7 +214,7 @@ def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
     edge_cylinder.location = cent
     edge_cylinder.rotation_mode = 'AXIS_ANGLE'
     edge_cylinder.rotation_axis_angle = [angle] + list(v_rot)
-    bpy.context.scene.objects.link(edge_cylinder)
+    bpy.context.collection.objects.link(edge_cylinder)
     shapes.append(edge_cylinder)
     shapes_to_smooth.append(edge_cylinder)
 
@@ -221,37 +227,37 @@ def blend_net (graph, node_size=3.0, edge_thickness=0.25, direct=False):
       arrow_cone.location = cent
       arrow_cone.rotation_mode = 'AXIS_ANGLE'
       arrow_cone.rotation_axis_angle = [angle + pi] + list(v_rot)
-      bpy.context.scene.objects.link(arrow_cone)
+      bpy.context.collection.objects.link(arrow_cone)
       shapes.append(arrow_cone)
 
   # Remove primitive meshes
   bpy.ops.object.select_all(action='DESELECT')
-  sphere.select = True
-  cylinder.select = True
-  cone.select = True
+  sphere.select_set(True)
+  cylinder.select_set(True)
+  cone.select_set(True)
 
   # If the starting cube is there, remove it
   if 'Cube' in bpy.data.objects.keys():
-    bpy.data.objects.get('Cube').select = True
+    bpy.data.objects.get('Cube').select_set(True)
   bpy.ops.object.delete()
 
   # Smooth specified shapes
   for shape in shapes_to_smooth:
-    shape.select = True
-  bpy.context.scene.objects.active = shapes_to_smooth[0]
+    shape.select_set(True)
+  shapes_to_smooth[0].select_set(True)
   bpy.ops.object.shade_smooth()
 
   # Join shapes
   for shape in shapes:
-    shape.select = True
-  bpy.context.scene.objects.active = shapes[0]
-  bpy.ops.object.join()
+    shape.select_set(True)
+  shapes[0].select_set(True)
+  #bpy.ops.object.join()
 
   # Center object origin to geometry
   bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
 
   # Refresh scene
-  bpy.context.scene.update()
+  #bpy.context.collection.update()
 
 
 
@@ -303,7 +309,7 @@ if __name__ == "__main__":
     if args.dim == 2:
       position = {k : (x, y, 0.) for k, (x, y) in position.items()}
 
-    colors = np.random.choice(all_colors.keys(), size=len(G.nodes))
+    colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
     colors = {k : v for k, v in zip(G.nodes, colors)}
 
     nx.set_node_attributes(G, position, 'position')
@@ -319,7 +325,7 @@ if __name__ == "__main__":
     if args.dim == 2:
       position = {k : (x, y, 0.) for k, (x, y) in position.items()}
 
-    colors = np.random.choice(all_colors.keys(), size=len(G.nodes))
+    colors = np.random.choice(list(all_colors.keys()), size=len(G.nodes))
     colors = {k : v for k, v in zip(G.nodes, colors)}
 
     nx.set_node_attributes(G, position, 'position')
